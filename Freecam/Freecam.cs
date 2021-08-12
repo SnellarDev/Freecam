@@ -20,43 +20,52 @@ namespace FreeCamMain
 
         public override void OnUpdate()
         {
-            if (Input.GetKeyDown(KeyCode.B))
+            try
             {
-                EnableFreecam(!Toggled);
+                if (Input.GetKeyDown(KeyCode.B) && PlayerExtensions.IsInWorld())
+                {
+                    EnableFreecam(!Toggled);
+                }
+                if (Input.GetKeyDown(KeyCode.B) && !PlayerExtensions.IsInWorld())
+                {
+                    MelonLogger.Msg("You are not in a world can't activate freecam");
+                    return;
+                }
+                if (Toggled)
+                {
+                    float number = Input.GetKey(KeyCode.LeftShift) ? (Speed * 4f) : Speed;
+                    if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+                    {
+                        MoveFreecamCamera(FreeCamObject.transform.forward * number * Time.deltaTime);
+                    }
+                    if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+                    {
+                        MoveFreecamCamera(FreeCamObject.transform.right * -number * Time.deltaTime);
+                    }
+                    if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+                    {
+                        MoveFreecamCamera(FreeCamObject.transform.forward * -number * Time.deltaTime);
+                    }
+                    if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+                    {
+                        MoveFreecamCamera(FreeCamObject.transform.right * number * Time.deltaTime);
+                    }
+                    if (Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.Space))
+                    {
+                        MoveFreecamCamera(Vector3.up * number * Time.deltaTime);
+                    }
+                    if (Input.GetKey(KeyCode.Q))
+                    {
+                        MoveFreecamCamera(Vector3.up * -number * Time.deltaTime);
+                    }
+                    RotateX += Input.GetAxis("Mouse X") * MouseSensX;
+                    RotateY += Input.GetAxis("Mouse Y") * MouseSensY;
+                    RotateY = Mathf.Clamp(RotateY, MinYRotation, MaxYRotation);
+                    RotateFreecamcamera(Quaternion.Euler(-RotateY, RotateX, 0f));
+                    TouchObjects(FreeCam);
+                }
             }
-            if (Toggled)
-            {
-                float number = Input.GetKey(KeyCode.LeftShift) ? (Speed * 4f) : Speed;
-                if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
-                {
-                    MoveFreecamCamera(FreeCamObject.transform.forward * number * Time.deltaTime);
-                }
-                if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
-                {
-                    MoveFreecamCamera(FreeCamObject.transform.right * -number * Time.deltaTime);
-                }
-                if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
-                {
-                    MoveFreecamCamera(FreeCamObject.transform.forward * -number * Time.deltaTime);
-                }
-                if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
-                {
-                    MoveFreecamCamera(FreeCamObject.transform.right * number * Time.deltaTime);
-                }
-                if (Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.Space))
-                {
-                    MoveFreecamCamera(Vector3.up * number * Time.deltaTime);
-                }
-                if (Input.GetKey(KeyCode.Q))
-                {
-                    MoveFreecamCamera(Vector3.up * -number * Time.deltaTime);
-                }
-                RotateX += Input.GetAxis("Mouse X") * MouseSensX;
-                RotateY += Input.GetAxis("Mouse Y") * MouseSensY;
-                RotateY = Mathf.Clamp(RotateY, MinYRotation, MaxYRotation);
-                RotateFreecamcamera(Quaternion.Euler(-RotateY, RotateX, 0f));
-                TouchObjects(FreeCam);
-            }
+            catch { }
         }
 
         public static void EnableFreecam(bool toggled)
