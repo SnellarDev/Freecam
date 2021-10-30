@@ -1,4 +1,5 @@
-﻿using MelonLoader;
+﻿using System.Runtime.CompilerServices;
+using MelonLoader;
 using UnityEngine;
 using VRC.SDKBase;
 
@@ -10,11 +11,8 @@ namespace FreeCamMain
         {
             get
             {
-                if (mainFreeCam == null && FreeCamObject != null)
-                {
-                    mainFreeCam = FreeCamObject.GetComponent<Camera>();
-                }
-                return mainFreeCam;
+                if (_mainFreeCam == null && _freeCamObject != null) _mainFreeCam = _freeCamObject.GetComponent<Camera>();
+                return _mainFreeCam;
             }
         }
 
@@ -22,92 +20,78 @@ namespace FreeCamMain
         {
             try
             {
-                if (Input.GetKeyDown(KeyCode.B) && PlayerExtensions.IsInWorld())
+                if (_toggled)
                 {
-                    EnableFreecam(!Toggled);
-                }
-                else if (Input.GetKeyDown(KeyCode.B) && !PlayerExtensions.IsInWorld())
-                {
-                    MelonLogger.Msg("You are not in a world can't activate freecam");
-                    return;
-                }
-                if (Toggled)
-                {
-                    float number = Input.GetKey(KeyCode.LeftShift) ? (Speed * 4f) : Speed;
-                    for (int i = 0; i < keys.Length; i++) switch (Input.GetKey(keys[i]))
-                        {
-                            case true when (i == 0):
-                                MoveFreecamCamera(FreeCamObject.transform.forward * number * Time.deltaTime);
-                                break;
+                    _rotateX += Input.GetAxis("Mouse X") * MouseSensX;
+                    _rotateY += Input.GetAxis("Mouse Y") * MouseSensY;
+                    _rotateY = Mathf.Clamp(_rotateY, MinYRotation, MaxYRotation);
+                    RotateFreecamcamera(Quaternion.Euler(-_rotateY, _rotateX, 0f));
+                    
+                    if(!Input.anyKey) return;
+                    float number = Event.current.shift ? SpeedFast : Speed;
 
-                            case true when (i == 1):
-                                MoveFreecamCamera(FreeCamObject.transform.right * -number * Time.deltaTime);
-                                break;
-
-                            case true when (i == 2):
-                                MoveFreecamCamera(FreeCamObject.transform.forward * -number * Time.deltaTime);
-                                break;
-
-                            case true when (i == 3):
-                                MoveFreecamCamera(FreeCamObject.transform.right * number * Time.deltaTime);
-                                break;
-
-                            case true when (i == 3):
-                                MoveFreecamCamera(Vector3.up * number * Time.deltaTime);
-                                break;
-
-                            case true when (i == 5):
-                                MoveFreecamCamera(Vector3.up * -number * Time.deltaTime);
-                                break;
-                        }
-
-                    RotateX += Input.GetAxis("Mouse X") * MouseSensX;
-                    RotateY += Input.GetAxis("Mouse Y") * MouseSensY;
-                    RotateY = Mathf.Clamp(RotateY, MinYRotation, MaxYRotation);
-                    RotateFreecamcamera(Quaternion.Euler(-RotateY, RotateX, 0f));
+                    if(Input.GetKey(KeyCode.W)) MoveFreecamCamera(_freeCamObject.transform.forward * number * Time.deltaTime);
+                    if(Input.GetKey(KeyCode.A)) MoveFreecamCamera(_freeCamObject.transform.right * -number * Time.deltaTime);
+                    if(Input.GetKey(KeyCode.S)) MoveFreecamCamera(_freeCamObject.transform.forward * -number * Time.deltaTime);
+                    if(Input.GetKey(KeyCode.D)) MoveFreecamCamera(_freeCamObject.transform.right * number * Time.deltaTime);
+                    if(Input.GetKey(KeyCode.E)) MoveFreecamCamera(Vector3.up * number * Time.deltaTime);
+                    if(Input.GetKey(KeyCode.Q)) MoveFreecamCamera(Vector3.up * -number * Time.deltaTime);
                     TouchObjects(FreeCam);
                 }
+
+                if (!Input.GetKeyDown(KeyCode.B)) return;
+                if (PlayerExtensions.IsInWorld())
+                {
+                    EnableFreecam(!_toggled);   
+                }
+                else
+                {
+                    MelonLogger.Msg("You are not in a world can't activate freecam");
+                }
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
-        public static void EnableFreecam(bool toggled)
+        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
-            Toggled = toggled;
-            if (PlayerExtensions.LocalVRCPlayer == null)
-            {
-                return;
-            }
+            EnableFreecam(false);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void EnableFreecam(bool toggled)
+        {
+            _toggled = toggled;
             PlayerExtensions.FreezeLocalPlayer(toggled);
             if (toggled)
             {
-                if (FreeCamObject == null)
-                {
-                    FreeCamObject = ObjectExtensions.CreateCamera(65f, true, 2f, false);
-                }
-                ToggleCamera(FreeCamObject, true);
-                FreeCamObject.transform.position = PlayerExtensions.LocalPlayer.transform.position + new Vector3(0f, 1f, 0f);
+                if (_freeCamObject == null) _freeCamObject = ObjectExtensions.CreateCamera(65f, true, 2f, false);
+                ToggleCamera(_freeCamObject, true);
+                _freeCamObject.transform.position = PlayerExtensions.LocalPlayer.transform.position + new Vector3(0f, 1f, 0f);
 
-                ToggleCamera(ObjectExtensions.GetPlayerCamera, false);
-                PlayerRotation = PlayerExtensions.LocalVRCPlayer.transform.rotation;
+                ToggleCamera(ObjectExtensions.Camera, false);
                 return;
             }
-            ToggleCamera(ObjectExtensions.GetPlayerCamera, true);
-            ToggleCamera(FreeCamObject, false);
+            ToggleCamera(ObjectExtensions.Camera, true);
+            ToggleCamera(_freeCamObject, false);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void RotateFreecamcamera(Quaternion q)
         {
-            PlayerExtensions.LocalVRCPlayer.transform.rotation = PlayerRotation;
-            FreeCamObject.transform.rotation = q;
+            _freeCamObject.transform.rotation = q;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void MoveFreecamCamera(Vector3 v3)
         {
-            FreeCamObject.transform.position += v3;
+            _freeCamObject.transform.position += v3;
         }
 
-        public static void TouchObjects(Camera camera)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void TouchObjects(Camera camera)
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -124,18 +108,17 @@ namespace FreeCamMain
             }
         }
 
-        public static void ToggleCamera(GameObject camera, bool Enabled)
-        {
-            camera.GetComponent<Camera>().enabled = Enabled;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ToggleCamera(GameObject camera, bool enabled) => camera.GetComponent<Camera>().enabled = enabled;
 
-        private KeyCode[] keys = new KeyCode[] { KeyCode.W, KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.E, KeyCode.Q };
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ToggleCamera(Camera camera, bool enabled) => camera.enabled = enabled;
 
-        private static float RotateX;
+        private static float _rotateX;
 
-        private static float RotateY;
+        private static float _rotateY;
 
-        public static bool Toggled;
+        private static bool _toggled;
 
         private static readonly float MouseSensX = 2f;
 
@@ -145,14 +128,11 @@ namespace FreeCamMain
 
         private static readonly float MaxYRotation = 90f;
 
-        private static GameObject FreeCamObject;
+        private static GameObject _freeCamObject;
 
-        private static Camera mainFreeCam;
+        private static Camera _mainFreeCam;
 
-        public static bool hasrotated;
-
-        private static readonly float Speed = 0.75f;
-
-        private static Quaternion PlayerRotation;
+        private const float Speed = 0.75f;
+        private const float SpeedFast = 0.75f * 4f;
     }
 }

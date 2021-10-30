@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using VRC;
 using VRC.Core;
@@ -14,12 +15,15 @@ namespace FreeCamMain
 
         public static Player LocalPlayer => Player.prop_Player_0;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FreezeLocalPlayer(bool enabled)
         {
             if (_localPlayerCollider == null) _localPlayerCollider = LocalVRCPlayer.GetComponent<Collider>();
             _localPlayerCollider.enabled = !enabled;
+            LocalVRCPlayer.gameObject.GetComponent<GamelikeInputController>().enabled = enabled;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInWorld() => RoomManager.field_Internal_Static_ApiWorld_0 != null;
 
         private static Collider _localPlayerCollider;

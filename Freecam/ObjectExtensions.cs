@@ -5,6 +5,7 @@ namespace FreeCamMain
 {
     internal static class ObjectExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameObject CreateCamera(float fov, bool forwards, float DistanceMultiplier = 2f, bool AttachToPlayer = true)
         {
             GameObject gameObject;
