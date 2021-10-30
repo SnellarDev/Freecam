@@ -2,6 +2,7 @@
 using MelonLoader;
 using UnityEngine;
 using VRC.SDKBase;
+using IEnumerator = System.Collections.IEnumerator;
 
 namespace FreeCamMain
 {
@@ -14,6 +15,21 @@ namespace FreeCamMain
                 if (_mainFreeCam == null && _freeCamObject != null) _mainFreeCam = _freeCamObject.GetComponent<Camera>();
                 return _mainFreeCam;
             }
+        }
+
+        public override void OnApplicationStart()
+        {
+            MelonCoroutines.Start(WaitForWorld());
+        }
+        
+        private IEnumerator WaitForWorld()
+        {
+            while (RoomManager.field_Internal_Static_ApiWorld_0 == null)
+            {
+                yield return new WaitForSeconds(1F);
+            }
+
+            ObjectExtensions.SetCamera();
         }
 
         public override void OnUpdate()
@@ -72,15 +88,17 @@ namespace FreeCamMain
                 _freeCamObject.transform.position = PlayerExtensions.LocalPlayer.transform.position + new Vector3(0f, 1f, 0f);
 
                 ToggleCamera(ObjectExtensions.Camera, false);
+                _playerRotation = PlayerExtensions.LocalVRCPlayer.transform.rotation;
                 return;
             }
-            ToggleCamera(ObjectExtensions.Camera, true);
-            ToggleCamera(_freeCamObject, false);
+            if(ObjectExtensions.Camera != null) ToggleCamera(ObjectExtensions.Camera, true);
+            if(_freeCamObject != null) ToggleCamera(_freeCamObject, false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void RotateFreecamcamera(Quaternion q)
         {
+            PlayerExtensions.LocalVRCPlayer.transform.rotation = _playerRotation;
             _freeCamObject.transform.rotation = q;
         }
 
@@ -134,5 +152,7 @@ namespace FreeCamMain
 
         private const float Speed = 0.75f;
         private const float SpeedFast = 0.75f * 4f;
+        
+        private static Quaternion _playerRotation;
     }
 }

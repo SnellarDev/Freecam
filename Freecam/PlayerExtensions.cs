@@ -18,9 +18,9 @@ namespace FreeCamMain
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FreezeLocalPlayer(bool enabled)
         {
+            if(LocalVRCPlayer == null) return;
             if (_localPlayerCollider == null) _localPlayerCollider = LocalVRCPlayer.GetComponent<Collider>();
             _localPlayerCollider.enabled = !enabled;
-            LocalVRCPlayer.gameObject.GetComponent<GamelikeInputController>().enabled = enabled;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

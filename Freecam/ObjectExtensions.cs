@@ -53,6 +53,7 @@ namespace FreeCamMain
             return gameObject;
         }
 
-        public static Camera Camera => Camera.main;
+        public static Camera Camera;
+        public static void SetCamera() => Camera = Camera.main;
     }
 }
