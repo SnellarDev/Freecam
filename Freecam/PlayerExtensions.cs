@@ -10,7 +10,7 @@ namespace FreeCamMain
 {
     internal static class PlayerExtensions
     {
-        // These extensions were made by Love, Day, me, and probaby a few other coders credits to them
+        // These extensions were made by Love, Day, me, and probably a few other coders credits to them
         public static VRCPlayer LocalVRCPlayer
         {
             get
@@ -178,11 +178,6 @@ namespace FreeCamMain
         public static void Teleport(this Player player)
         {
             LocalVRCPlayer.transform.position = player.GetVRCPlayer().transform.position;
-        }
-
-        public static void ReloadAvatar(this Player player)
-        {
-            VRCPlayer.Method_Public_Static_Void_APIUser_0(player.GetAPIUser());
         }
 
         public static QuickMenu GetQuickMenu() =>

@@ -28,7 +28,7 @@ namespace FreeCamMain
                 }
                 else if (Input.GetKeyDown(KeyCode.B) && !PlayerExtensions.IsInWorld())
                 {
-                    MelonLogger.Msg("You are not in a world can't activate freecam");
+                    MelonLogger.Msg("You are not in a world, can't activate freecam");
                     return;
                 }
                 if (Toggled)
