@@ -292,7 +292,14 @@ namespace FreeCamMain
             }
             LocalPlayerCollider.enabled = !Enabled;
         }
-
+        public static void FreezeController(bool Enabled)
+        {
+            if (inputcontroller == null)
+            {
+                inputcontroller = LocalVRCPlayer.GetComponent<GamelikeInputController>();
+            }
+            inputcontroller.enabled = !Enabled;
+        }
         public static void SetLocalPlayerWalkSpeed(float speed)
         {
             LocalPlayer.GetVRCPlayerApi().SetWalkSpeed(speed);
@@ -390,5 +397,6 @@ namespace FreeCamMain
 
         private static VRC_EventHandler handler;
         private static Collider LocalPlayerCollider;
+        private static GamelikeInputController inputcontroller;
     }
 }

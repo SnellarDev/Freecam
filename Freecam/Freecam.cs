@@ -79,6 +79,7 @@ namespace FreeCamMain
                 return;
             }
             PlayerExtensions.FreezeLocalPlayer(toggled);
+            PlayerExtensions.FreezeController(toggled);
             if (toggled)
             {
                 if (FreeCamObject == null)
